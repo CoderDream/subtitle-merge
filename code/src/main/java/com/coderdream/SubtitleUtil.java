@@ -10,11 +10,24 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-
+/**
+ * @author coderdream
+ * @version 1.0
+ * @since 2020-07-04
+ */
 public class SubtitleUtil {
 
+    /**
+     * 日志
+     */
     static Logger logger = Logger.getLogger(SubtitleUtil.class.getName());
 
+    /**
+     * 主方法
+     *
+     * @param args
+     * @throws IOException
+     */
     public static void main(String[] args) throws IOException {
         if (args.length == 3) {
             merge(args[0], args[1], args[2]);
@@ -24,18 +37,18 @@ public class SubtitleUtil {
         }
     }
 
+    /**
+     * 整合字幕并写入新文件
+     *
+     * @param fileName1
+     * @param fileName2
+     * @param fileName
+     * @throws IOException
+     */
     private static void merge(String fileName1, String fileName2, String fileName) throws IOException {
-        // Java8用流的方式读文件，更加高效
-        // Files.lines(Paths.get("Subtitle_5.srt"), StandardCharsets.UTF_8).forEach(System.out::println);
-//        String fileName1 = "Subtitle_1.srt";
-//        String fileName2 = "Subtitle_5.srt";
-//        String fileName = "Subtitle_merge.srt";
         List<Item> firstItems = SubtitleUtil.readFile(fileName1);
         List<Item> secondItems = SubtitleUtil.readFile(fileName2);
         List<Item> subtitleMergeItems = subtitleMerge(firstItems, secondItems);
-//        for (Item item : subtitleMergeItems) {
-//            System.out.println(item);
-//        }
         writeBuffer(fileName, subtitleMergeItems);
     }
 
@@ -45,13 +58,12 @@ public class SubtitleUtil {
      * @return
      * @throws IOException
      */
-    public static File writeBuffer(String fileName, List<Item> subtitleMergeItems) throws IOException {
+    private static File writeBuffer(String fileName, List<Item> subtitleMergeItems) throws IOException {
         if (!Files.exists(Paths.get(fileName))) Files.write(Paths.get(fileName), new byte[0]);
         File file = new File(fileName);
         FileOutputStream fos = new FileOutputStream(file);
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos));
         for (Item item : subtitleMergeItems) {
-            // System.out.println(item);
             writer.write(item.toMultiLine() + "\r\n");
         }
 
@@ -61,7 +73,13 @@ public class SubtitleUtil {
     }
 
 
-    public static List<Item> readFile(String fileName) {
+    /**
+     * 读取字幕文件
+     *
+     * @param fileName
+     * @return
+     */
+    private static List<Item> readFile(String fileName) {
         //read file into stream, try-with-resources
         List<Item> results = new ArrayList<>();
         Item item = null;
@@ -69,7 +87,6 @@ public class SubtitleUtil {
         String timeRange = "";
         String content = "";
         String contentNext = "";
-        //Boolean brFlag = false;
         Set<String> timeRangeSet = new HashSet<>();
         try (Stream<String> stream = Files.lines(Paths.get(fileName), StandardCharsets.UTF_8)) {
             List<String> list = new ArrayList<String>();
@@ -83,7 +100,6 @@ public class SubtitleUtil {
             }
 
             for (int i = 0; i < lines.length; i++) {
-                //System.out.println( intarray[i] );
                 String str = lines[i];
                 if ("".equals(str.trim())) {
                     item = new Item();
@@ -120,10 +136,6 @@ public class SubtitleUtil {
                     }
                     // 去掉重复
                     timeRangeSet.add(timeRange);
-                    //System.out.println(index + " br");
-                } else {
-                    //id
-                    //System.out.println(index + str);
                 }
             }
         } catch (IOException e) {
@@ -133,7 +145,14 @@ public class SubtitleUtil {
         return results;
     }
 
-    public static List<Item> subtitleMerge(List<Item> firstItems, List<Item> secondItems) {
+    /**
+     * 合并字幕
+     *
+     * @param firstItems
+     * @param secondItems
+     * @return
+     */
+    private static List<Item> subtitleMerge(List<Item> firstItems, List<Item> secondItems) {
         List<Item> subtitleMergeItems = new ArrayList<>();
         Map<String, Item> secondMap = new HashMap<>();
         for (Item item : secondItems) {
@@ -157,6 +176,12 @@ public class SubtitleUtil {
         return subtitleMergeItems;
     }
 
+    /**
+     * 判断字符串是否为正整数
+     *
+     * @param string
+     * @return
+     */
     public static boolean isNumeric(String string) {
         Pattern pattern = Pattern.compile("[0-9]*");
         return pattern.matcher(string).matches();
